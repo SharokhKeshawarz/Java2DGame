@@ -17,6 +17,10 @@ public class Player extends Entity {
     public final int screenX;
     public final int screenY;
 
+    public int hasKey = 0;
+
+    int standCounter = 0;
+
     public Player(GamePanel gamePanel, KeyHandler keyHandler) {
         this.gamePanel = gamePanel;
         this.keyHandler = keyHandler;
@@ -29,6 +33,10 @@ public class Player extends Entity {
         solidArea.y = 16;
         solidArea.width = gamePanel.tileSize - 16; // 48 - 16 = 32
         solidArea.height = gamePanel.tileSize - 16; // 48 - 16 = 32
+
+        solidAreaDefaultX = solidArea.x;
+        solidAreaDefaultY = solidArea.y;
+
 
         setDefaultValues();
         getPlayerImage();
@@ -78,6 +86,9 @@ public class Player extends Entity {
             collisionOn = false;
             gamePanel.collisionChecker.checkTile(this);
 
+            int objectIndex = gamePanel.collisionChecker.checkObject(this, true);
+            pickUpObject(objectIndex);
+
             // If Collision Is False Player Can Move
             if (collisionOn == false) {
                 switch (direction) {
@@ -95,6 +106,48 @@ public class Player extends Entity {
                 else if (spriteNumber == 2) spriteNumber = 1;
                 spriteCounter = 0;
             }
+        }
+        else {
+            standCounter++;
+            if (standCounter == 20) {
+                spriteNumber = 1;
+                standCounter = 0;
+            }
+        }
+    }
+
+    public void pickUpObject(int index) {
+        if (index != 999) {
+            String objectName = gamePanel.objects[index].name;
+            switch (objectName) {
+                case "Key" -> {
+                    gamePanel.playVSX(1);
+                    hasKey++;
+                    gamePanel.objects[index] = null;
+                    gamePanel.ui.showMessage("You Got A Key!");
+                }
+                case "Door" -> {
+                    if (hasKey > 0) {
+                        gamePanel.playVSX(3);
+                        gamePanel.objects[index] = null;
+                        hasKey--;
+                        gamePanel.ui.showMessage("You Opened A Door!");
+                    } else {
+                        gamePanel.ui.showMessage("You Need A Key!");
+                    }
+                }
+                case "Boots" -> {
+                    gamePanel.playVSX(2);
+                    speed += 1;
+                    gamePanel.objects[index] = null;
+                    gamePanel.ui.showMessage("Speed Up");
+                }
+                case "Chest" -> {
+                    gamePanel.ui.gameFinished = true;
+                    gamePanel.stopMusic();
+                    gamePanel.playVSX(4);
+                }
+            }            
         }
     }
 

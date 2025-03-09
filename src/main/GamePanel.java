@@ -9,6 +9,7 @@ import java.awt.Toolkit;
 import javax.swing.JPanel;
 
 import src.entity.Player;
+import src.object.SuperObject;
 import src.tile.TileManager;
 
 public class GamePanel extends JPanel implements Runnable {
@@ -27,14 +28,18 @@ public class GamePanel extends JPanel implements Runnable {
     
     public final int maxWorldCol = 50;
     public final int maxWorldRow = 50;
-    public final int worldWidth = tileSize * maxWorldCol;
-    public final int worldHeight = tileSize * maxWorldRow;
 
     public KeyHandler keyHandler = new KeyHandler();
-    Thread gameThread;
+    Sound music = new Sound();
+    Sound vsx = new Sound();
     TileManager tileManager = new TileManager(this);
     public CollisionChecker collisionChecker = new CollisionChecker(this);
+    public AssetSetter assetSetter = new AssetSetter(this);
     public Player player = new Player(this, keyHandler);
+    public SuperObject objects[] = new SuperObject[10];
+    public UI ui = new UI(this);
+    Thread gameThread;
+    
 
 
     public GamePanel() {
@@ -45,6 +50,10 @@ public class GamePanel extends JPanel implements Runnable {
         this.setFocusable(true);
     }
 
+    public void setupGame() {
+        assetSetter.setObject();
+        playMusic(0);
+    }
 
     public void startGameThread() {
         gameThread = new Thread(this);
@@ -91,10 +100,28 @@ public class GamePanel extends JPanel implements Runnable {
         Graphics2D g2 = (Graphics2D)g;
         
         tileManager.draw(g2);
+        for (int i = 0; i < objects.length; i++)
+        if (objects[i] != null)
+        objects[i].draw(g2, this);
         player.draw(g2);
+        ui.draw(g2);
 
         g2.dispose();
         Toolkit.getDefaultToolkit().sync();
     }
 
+    public void playMusic(int i) {
+        music.setFile(i);
+        music.play();
+        music.loop();
+    }
+
+    public void stopMusic() {
+        music.stop();
+    }
+
+    public void playVSX(int i) {
+        vsx.setFile(i);
+        vsx.play();
+    }
 }
